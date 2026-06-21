@@ -15,6 +15,11 @@ View your app in AI Studio: https://ai.studio/apps/101ad353-a3cb-4740-9998-c951f
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set `GEMINI_API_KEY` in `.env.local` locally, or in Vercel Project Settings for deployment.
+   Optional overrides:
+   - `GEMINI_TEXT_MODEL` defaults to `gemini-3.5-flash`
+   - `GEMINI_IMAGE_MODEL` defaults to `gemini-3.1-flash-image`
 3. Run the app:
    `npm run dev`
+
+For full local API testing with Vercel Functions, run `vercel dev`.
