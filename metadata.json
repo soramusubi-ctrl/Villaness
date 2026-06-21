@@ -1,0 +1,6 @@
+{
+  "name": "Villainess Diary",
+  "description": "Convert your daily diary into a Medieval European villainess story, complete with a generated manga representation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
