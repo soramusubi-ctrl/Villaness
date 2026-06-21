@@ -16,15 +16,25 @@ export default function App() {
     setStory('');
     setManga(null);
     
-    // Convert text
-    const response = await fetch('/api/convert-diary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ diary }),
-    });
-    const data = await response.json();
-    setStory(data.story);
-    setTextLoading(false);
+    try {
+      const response = await fetch('/api/convert-diary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diary }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to convert text.');
+        return;
+      }
+
+      setStory(data.story);
+    } catch {
+      setError('Failed to convert text.');
+    } finally {
+      setTextLoading(false);
+    }
   };
 
   const handleMangaGeneration = async () => {
@@ -32,28 +42,30 @@ export default function App() {
     setError(null);
     setManga(null);
     
-    // Generate manga
-    const formData = new FormData();
-    formData.append('story', story);
-    if (characterImage) {
+    try {
+      const formData = new FormData();
+      formData.append('story', story);
+      if (characterImage) {
         formData.append('characterImage', characterImage);
+      }
+      
+      const mangaResponse = await fetch('/api/generate-manga', {
+        method: 'POST',
+        body: formData,
+      });
+      const mangaData = await mangaResponse.json();
+      
+      if (!mangaResponse.ok) {
+        setError(mangaData.error || 'Failed to generate manga.');
+        return;
+      }
+
+      setManga(mangaData.mangaUrl);
+    } catch {
+      setError('Failed to generate manga.');
+    } finally {
+      setMangaLoading(false);
     }
-    
-    const mangaResponse = await fetch('/api/generate-manga', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (mangaResponse.status === 429) {
-        setError("API quota exceeded. Please try again in about a minute.");
-    } else if (!mangaResponse.ok) {
-        setError("Failed to generate manga.");
-    } else {
-        const mangaData = await mangaResponse.json();
-        setManga(mangaData.mangaUrl);
-    }
-    
-    setMangaLoading(false);
   };
 
   return (
@@ -74,6 +86,7 @@ export default function App() {
             <label className="block text-sm font-medium text-stone-700">Upload Character Image:</label>
             <input 
               type="file" 
+              accept="image/png,image/jpeg,image/webp"
               onChange={(e) => setCharacterImage(e.target.files?.[0] || null)}
               className="mt-2"
             />
