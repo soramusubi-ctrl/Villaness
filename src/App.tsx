@@ -91,7 +91,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto grid max-w-6xl gap-8 px-5 py-8 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:px-12 md:py-12">
-        <section className="rounded-md border border-[#9f7840]/55 bg-[#2b1436]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
+        <section className="thorn-frame rounded-md border border-[#9f7840]/55 bg-[#2b1436]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <textarea
             value={diary}
             onChange={(e) => setDiary(e.target.value)}
@@ -134,21 +134,25 @@ export default function App() {
           <motion.section 
             initial={{ opacity: 0, y: 10 }} 
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-md border border-[#9f7840]/55 bg-[#f5e7cf] p-6 text-[#241322] shadow-[0_18px_60px_rgba(0,0,0,0.24)]"
+            className="thorn-frame rounded-md border border-[#9f7840]/55 bg-[#f5e7cf] p-6 text-[#241322] shadow-[0_18px_60px_rgba(0,0,0,0.24)]"
           >
             <h2 className="mb-4 border-b border-[#b98d48]/55 pb-3 text-xl font-semibold text-[#4b1d67]">The Villainess's Version</h2>
             <p className="whitespace-pre-wrap font-sans leading-8">{story}</p>
           </motion.section>
         )}
         {manga && (
-          <motion.img 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            src={manga}
-            alt="Manga"
-            referrerPolicy="no-referrer"
-            className="w-full rounded-md border border-[#9f7840]/55 shadow-[0_18px_60px_rgba(0,0,0,0.24)]"
-          />
+            className="thorn-frame rounded-md"
+          >
+            <img
+              src={manga}
+              alt="Manga"
+              referrerPolicy="no-referrer"
+              className="w-full rounded-md border border-[#9f7840]/55 shadow-[0_18px_60px_rgba(0,0,0,0.24)]"
+            />
+          </motion.div>
         )}
         </div>
       </main>

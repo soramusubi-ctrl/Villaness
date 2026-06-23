@@ -18,3 +18,38 @@ textarea,
 input {
   font: inherit;
 }
+
+.thorn-frame {
+  position: relative;
+  isolation: isolate;
+}
+
+.thorn-frame::before,
+.thorn-frame::after {
+  content: "";
+  position: absolute;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.thorn-frame::before {
+  inset: -9px;
+  border: 1px solid rgba(214, 178, 99, 0.5);
+  background:
+    linear-gradient(90deg, rgba(29, 72, 43, 0), rgba(48, 102, 59, 0.95), rgba(29, 72, 43, 0)) top / 100% 2px no-repeat,
+    linear-gradient(90deg, rgba(29, 72, 43, 0), rgba(48, 102, 59, 0.95), rgba(29, 72, 43, 0)) bottom / 100% 2px no-repeat,
+    linear-gradient(180deg, rgba(29, 72, 43, 0), rgba(48, 102, 59, 0.95), rgba(29, 72, 43, 0)) left / 2px 100% no-repeat,
+    linear-gradient(180deg, rgba(29, 72, 43, 0), rgba(48, 102, 59, 0.95), rgba(29, 72, 43, 0)) right / 2px 100% no-repeat;
+}
+
+.thorn-frame::after {
+  inset: -13px;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 18px, rgba(218, 184, 104, 0.88) 18px 20px, transparent 20px 28px) top / 100% 12px repeat-x,
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(218, 184, 104, 0.88) 18px 20px, transparent 20px 28px) bottom / 100% 12px repeat-x,
+    repeating-linear-gradient(45deg, transparent 0 18px, rgba(218, 184, 104, 0.78) 18px 20px, transparent 20px 28px) left / 12px 100% repeat-y,
+    repeating-linear-gradient(135deg, transparent 0 18px, rgba(218, 184, 104, 0.78) 18px 20px, transparent 20px 28px) right / 12px 100% repeat-y;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  opacity: 0.82;
+}
