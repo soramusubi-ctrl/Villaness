@@ -100,12 +100,12 @@ export default async function handler(req: any, res: any) {
     const characterImage = req.file;
     const parts: any[] = [
       {
-        text: `Generate a 5-7 panel manga-style illustration for the following villainess story.
+        text: `Generate a 5-7 panel manga-style illustration for the following misunderstood villainess-style story.
 Instruction: Use Japanese manga reading order (right-to-left).
 Style: Masterpiece Japanese anime manga style, clean and uncluttered backgrounds.
 Color palette: Pale, soft, and muted colors, creating a refined and intellectual atmosphere.
-Character Profile: The villainess is a misunderstood tsundere who is thoughtful and acts for the sake of the people, but is often misjudged due to her personality.
-The manga should convey this personality, the story visually, and be intellectual and graceful.
+Character Profile: She has the aura, fashion, and sharp expression of a villainess, but she is not evil. She is a misunderstood tsundere noblewoman who is thoughtful, protective, and acting for the sake of others, while being misjudged because her words sound proud or severe.
+Avoid depicting her as cruel, malicious, sadistic, or genuinely villainous. The manga should convey grace, intelligence, hidden kindness, and the gap between her intimidating appearance and good intentions.
 Story: ${story}`,
       },
     ];
