@@ -11,7 +11,7 @@ const textModel = process.env.GEMINI_TEXT_MODEL || "gemini-3.5-flash";
 
 function getClient() {
   if (!process.env.GEMINI_API_KEY) {
-    throw Object.assign(new Error("GEMINI_API_KEY is not configured"), { statusCode: 500 });
+    throw Object.assign(new Error("GEMINI_API_KEY is not configured."), { statusCode: 500 });
   }
 
   return new GoogleGenAI({
@@ -55,6 +55,9 @@ Diary: ${diary}`;
     res.status(200).json({ story: result.text || "" });
   } catch (error: any) {
     const statusCode = error?.statusCode || error?.status || error?.response?.status || 500;
+    if (error?.message === "GEMINI_API_KEY is not configured.") {
+      return sendError(res, 500, error.message);
+    }
     if (statusCode === 413) {
       return sendError(res, 413, "Request body too large.");
     }

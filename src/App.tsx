@@ -10,6 +10,16 @@ export default function App() {
   const [mangaLoading, setMangaLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const readApiResponse = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    const text = await response.text();
+    throw new Error(text ? 'API returned a non-JSON response.' : 'API did not return a response.');
+  };
+
   const handleStoryTransform = async () => {
     setTextLoading(true);
     setError(null);
@@ -22,7 +32,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ diary }),
       });
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         setError(data.error || 'Failed to convert text.');
@@ -30,8 +40,8 @@ export default function App() {
       }
 
       setStory(data.story);
-    } catch {
-      setError('Failed to convert text.');
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Failed to convert text.');
     } finally {
       setTextLoading(false);
     }
@@ -53,7 +63,7 @@ export default function App() {
         method: 'POST',
         body: formData,
       });
-      const mangaData = await mangaResponse.json();
+      const mangaData = await readApiResponse(mangaResponse);
       
       if (!mangaResponse.ok) {
         setError(mangaData.error || 'Failed to generate manga.');
@@ -61,8 +71,8 @@ export default function App() {
       }
 
       setManga(mangaData.mangaUrl);
-    } catch {
-      setError('Failed to generate manga.');
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : 'Failed to generate manga.');
     } finally {
       setMangaLoading(false);
     }
