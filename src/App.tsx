@@ -16,8 +16,8 @@ export default function App() {
       return response.json();
     }
 
-    const text = await response.text();
-    throw new Error(text ? 'API returned a non-JSON response.' : 'API did not return a response.');
+    await response.text();
+    throw new Error(`API returned a non-JSON response (${response.status}).`);
   };
 
   const handleStoryTransform = async () => {
