@@ -90,7 +90,9 @@ export default async function handler(req: any, res: any) {
       return sendError(res, 413, `Diary text must be ${DIARY_MAX_CHARS} characters or fewer.`);
     }
 
-    const prompt = `Convert the following diary entry into the voice of a 19th-century European villainess.
+    const prompt = `Convert the following diary entry into the voice of a 19th-century European noblewoman who is called a villainess, but is not actually evil.
+She should sound elegant, proud, sharp-tongued, and a little tsundere, yet fundamentally kind, thoughtful, and acting with good intentions.
+Avoid making her cruel, malicious, manipulative, or genuinely villainous. Make her feel misunderstood rather than wicked.
 Diary: ${diary}`;
 
     const ai = await getClient();
