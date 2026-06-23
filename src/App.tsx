@@ -1,7 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 
+function PrivacyPolicy() {
+  return (
+    <main className="mx-auto max-w-4xl px-5 py-8 md:px-12 md:py-12">
+      <section className="thorn-frame rounded-md border border-[#9f7840]/55 bg-[#f5e7cf] p-6 text-[#241322] shadow-[0_18px_60px_rgba(0,0,0,0.24)] md:p-8">
+        <a href="#" className="font-sans text-sm font-semibold text-[#7b1023] underline decoration-[#b98d48] underline-offset-4">
+          Villainess Diaryに戻る
+        </a>
+        <h2 className="mt-6 border-b border-[#b98d48]/55 pb-4 text-3xl font-semibold text-[#4b1d67]">プライバシーポリシー</h2>
+        <div className="mt-6 space-y-6 font-sans leading-8">
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">1. 取り扱う情報</h3>
+            <p>
+              Villainess Diaryは、入力された日記本文、任意でアップロードされたキャラクター画像、AIが生成した文章や画像を処理します。このアプリはユーザーアカウントを提供せず、リクエスト処理後に日記本文やアップロード画像をアプリ内へ意図的に保存しません。
+            </p>
+          </section>
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">2. 利用目的</h3>
+            <p>
+              入力内容は、日記を悪役令嬢風の創作文章へ変換するため、また必要に応じて漫画風画像を生成するために利用します。サービス運用、セキュリティ、不正利用防止、障害調査のために、技術的なリクエスト情報を処理する場合があります。
+            </p>
+          </section>
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">3. 外部サービス</h3>
+            <p>
+              このアプリは、Googleが提供するGemini APIへ日記本文、生成済み文章、任意のアップロード画像を送信します。Googleによるプロンプト、ファイル、生成結果の取り扱いは、無料枠の利用か、Cloud Billingが有効な有料プロジェクトの利用かによって異なる場合があります。また、このアプリはVercelでホストされており、サイト運用のために技術ログやリクエストメタデータが処理される場合があります。
+            </p>
+          </section>
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">4. 入力しないでほしい情報</h3>
+            <p>
+              要配慮個人情報、秘密情報、医療情報、金融情報、パスワード、APIキー、利用許可のない画像などは入力またはアップロードしないでください。
+            </p>
+          </section>
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">5. 子どもの利用について</h3>
+            <p>
+              このアプリは子ども向けではありません。Gemini APIの追加規約では、18歳未満の方を対象にした、または18歳未満の方がアクセスする可能性の高いAPIクライアントとして利用しないことが求められています。
+            </p>
+          </section>
+          <section>
+            <h3 className="font-serif text-xl font-semibold text-[#7b1023]">6. 改定と問い合わせ</h3>
+            <p>
+              アプリの変更に合わせて、このポリシーを改定する場合があります。質問がある場合は、GitHubリポジトリまたは運営者が示す連絡方法からお問い合わせください。
+            </p>
+          </section>
+          <p className="border-t border-[#b98d48]/55 pt-4 text-sm text-[#6f4b3b]">最終更新日: 2026年6月23日</p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 export default function App() {
+  const [route, setRoute] = useState(() => (window.location.hash === '#privacy' ? 'privacy' : 'app'));
   const [diary, setDiary] = useState('');
   const [characterImage, setCharacterImage] = useState<File | null>(null);
   const [story, setStory] = useState('');
@@ -9,6 +62,12 @@ export default function App() {
   const [textLoading, setTextLoading] = useState(false);
   const [mangaLoading, setMangaLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncRoute = () => setRoute(window.location.hash === '#privacy' ? 'privacy' : 'app');
+    window.addEventListener('hashchange', syncRoute);
+    return () => window.removeEventListener('hashchange', syncRoute);
+  }, []);
 
   const readApiResponse = async (response: Response) => {
     const contentType = response.headers.get('content-type') || '';
@@ -90,6 +149,9 @@ export default function App() {
         </div>
       </header>
 
+      {route === 'privacy' ? (
+        <PrivacyPolicy />
+      ) : (
       <main className="mx-auto grid max-w-6xl gap-8 px-5 py-8 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:px-12 md:py-12">
         <section className="thorn-frame rounded-md border border-[#9f7840]/55 bg-[#2b1436]/90 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.26)]">
           <textarea
@@ -156,6 +218,14 @@ export default function App() {
         )}
         </div>
       </main>
+      )}
+
+      <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 pb-8 font-sans text-sm text-[#d8b66b] md:px-12">
+        <span>Villainess Diary</span>
+        <a href="#privacy" className="underline decoration-[#b98d48] underline-offset-4 transition hover:text-[#fff5df]">
+          プライバシーポリシー
+        </a>
+      </footer>
     </div>
   );
 }
