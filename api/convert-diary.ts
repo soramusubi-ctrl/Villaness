@@ -1,19 +1,65 @@
-import { GoogleGenAI } from "@google/genai";
-import {
-  DIARY_MAX_CHARS,
-  getClientIp,
-  isRateLimited,
-  readJsonBody,
-  sendError,
-} from "../lib/apiSafety";
-
+const WINDOW_MS = 60_000;
+const JSON_LIMIT_BYTES = 16 * 1024;
+const DIARY_MAX_CHARS = 4_000;
 const textModel = process.env.GEMINI_TEXT_MODEL || "gemini-3.5-flash";
+const buckets = new Map<string, { count: number; resetAt: number }>();
 
-function getClient() {
+function getClientIp(req: { headers?: Record<string, string | string[] | undefined>; socket?: { remoteAddress?: string } }) {
+  const forwardedFor = req.headers?.["x-forwarded-for"];
+  const firstForwarded = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+  return firstForwarded?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
+}
+
+function isRateLimited(key: string, limit: number) {
+  const now = Date.now();
+  const bucket = buckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+
+  bucket.count += 1;
+  return bucket.count > limit;
+}
+
+async function readJsonBody(req: any, maxBytes = JSON_LIMIT_BYTES) {
+  if (req.body && typeof req.body === "object") {
+    return req.body;
+  }
+
+  if (typeof req.body === "string") {
+    if (Buffer.byteLength(req.body) > maxBytes) {
+      throw Object.assign(new Error("Request body too large"), { statusCode: 413 });
+    }
+    return JSON.parse(req.body);
+  }
+
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+
+  for await (const chunk of req) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    totalBytes += buffer.length;
+    if (totalBytes > maxBytes) {
+      throw Object.assign(new Error("Request body too large"), { statusCode: 413 });
+    }
+    chunks.push(buffer);
+  }
+
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+
+function sendError(res: any, statusCode: number, error: string) {
+  res.status(statusCode).json({ error });
+}
+
+async function getClient() {
   if (!process.env.GEMINI_API_KEY) {
     throw Object.assign(new Error("GEMINI_API_KEY is not configured."), { statusCode: 500 });
   }
 
+  const { GoogleGenAI } = await import("@google/genai");
   return new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
     httpOptions: { headers: { "User-Agent": "villainess-diary-vercel" } },
@@ -47,7 +93,8 @@ export default async function handler(req: any, res: any) {
     const prompt = `Convert the following diary entry into the voice of a 19th-century European villainess.
 Diary: ${diary}`;
 
-    const result = await getClient().models.generateContent({
+    const ai = await getClient();
+    const result = await ai.models.generateContent({
       model: textModel,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     });

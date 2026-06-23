@@ -3,13 +3,13 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import convertDiary from "./api/convert-diary";
 import generateManga from "./api/generate-manga";
-import { JSON_LIMIT_BYTES } from "./lib/apiSafety";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
+const JSON_LIMIT_BYTES = 16 * 1024;
 
 app.post("/api/convert-diary", express.json({ limit: JSON_LIMIT_BYTES }), convertDiary);
 app.post("/api/generate-manga", generateManga);

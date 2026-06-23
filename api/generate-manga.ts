@@ -1,50 +1,69 @@
-import { GoogleGenAI } from "@google/genai";
-import multer from "multer";
-import {
-  ALLOWED_IMAGE_TYPES,
-  IMAGE_MAX_BYTES,
-  STORY_MAX_CHARS,
-  getClientIp,
-  isRateLimited,
-  sendError,
-} from "../lib/apiSafety";
-
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+const WINDOW_MS = 60_000;
+const STORY_MAX_CHARS = 8_000;
+const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const imageModel = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image";
+const buckets = new Map<string, { count: number; resetAt: number }>();
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: IMAGE_MAX_BYTES,
-    files: 1,
-    fields: 1,
-    fieldSize: STORY_MAX_CHARS * 4,
-  },
-  fileFilter: (_req, file, callback) => {
-    if (!ALLOWED_IMAGE_TYPES.has(file.mimetype)) {
-      return callback(new Error("Unsupported image type"));
-    }
-    callback(null, true);
-  },
-}).single("characterImage");
+function getClientIp(req: { headers?: Record<string, string | string[] | undefined>; socket?: { remoteAddress?: string } }) {
+  const forwardedFor = req.headers?.["x-forwarded-for"];
+  const firstForwarded = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+  return firstForwarded?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
+}
 
-function getClient() {
+function isRateLimited(key: string, limit: number) {
+  const now = Date.now();
+  const bucket = buckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+
+  bucket.count += 1;
+  return bucket.count > limit;
+}
+
+function sendError(res: any, statusCode: number, error: string) {
+  res.status(statusCode).json({ error });
+}
+
+async function getClient() {
   if (!process.env.GEMINI_API_KEY) {
     throw Object.assign(new Error("GEMINI_API_KEY is not configured."), { statusCode: 500 });
   }
 
+  const { GoogleGenAI } = await import("@google/genai");
   return new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
     httpOptions: { headers: { "User-Agent": "villainess-diary-vercel" } },
   });
 }
 
-function runUpload(req: any, res: any) {
+async function runUpload(req: any, res: any) {
+  const { default: multer } = await import("multer");
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: IMAGE_MAX_BYTES,
+      files: 1,
+      fields: 1,
+      fieldSize: STORY_MAX_CHARS * 4,
+    },
+    fileFilter: (_req, file, callback) => {
+      if (!ALLOWED_IMAGE_TYPES.has(file.mimetype)) {
+        return callback(new Error("Unsupported image type"));
+      }
+      callback(null, true);
+    },
+  }).single("characterImage");
+
   return new Promise<void>((resolve, reject) => {
     upload(req, res, (error: unknown) => {
       if (error) reject(error);
@@ -100,7 +119,8 @@ Story: ${story}`,
       });
     }
 
-    const response = await getClient().models.generateContent({
+    const ai = await getClient();
+    const response = await ai.models.generateContent({
       model: imageModel,
       contents: { parts },
       config: {
