@@ -35,7 +35,7 @@ const upload = multer({
 
 function getClient() {
   if (!process.env.GEMINI_API_KEY) {
-    throw Object.assign(new Error("GEMINI_API_KEY is not configured"), { statusCode: 500 });
+    throw Object.assign(new Error("GEMINI_API_KEY is not configured."), { statusCode: 500 });
   }
 
   return new GoogleGenAI({
@@ -118,6 +118,9 @@ Story: ${story}`,
       mangaUrl: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`,
     });
   } catch (error: any) {
+    if (error?.message === "GEMINI_API_KEY is not configured.") {
+      return sendError(res, 500, error.message);
+    }
     if (error?.code === "LIMIT_FILE_SIZE") {
       return sendError(res, 413, "Image must be 4 MB or smaller.");
     }

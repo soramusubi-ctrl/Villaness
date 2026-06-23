@@ -22,4 +22,4 @@ View your app in AI Studio: https://ai.studio/apps/101ad353-a3cb-4740-9998-c951f
 3. Run the app:
    `npm run dev`
 
-For full local API testing with Vercel Functions, run `vercel dev`.
+`npm run dev` starts a local Express/Vite server that mirrors the Vercel API routes. Use `npm run dev:vite` only when you want the frontend without local API routes.
